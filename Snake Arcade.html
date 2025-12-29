@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro-Modern Snake Game | Play Online</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000" crossorigin="anonymous"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply font-inter text-zinc-100 bg-charcoal-900;
+            }
+        }
+        .text-shadow-lg { text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'charcoal-900': '#1A1A1D',
+                        'charcoal-800': '#2C2C30',
+                        'emerald-500': '#10B981',
+                        'cyan-400': '#22D3EE',
+                        'rose-500': '#F43F5E',
+                        'zinc-100': '#F4F4F5',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="flex flex-col items-center min-h-screen p-4 overflow-y-auto">
+    
+    <header class="w-full max-w-xl py-6 text-center">
+        <h1 class="text-3xl font-outfit font-extrabold text-emerald-500 tracking-tighter uppercase">Retro Snake</h1>
+        <p class="text-zinc-500 text-sm">Classic Arcade Action</p>
+    </header>
+
+    <div class="w-full max-w-xl flex justify-between items-end mb-4 px-2">
+        <div class="flex flex-col">
+            <span class="text-xs font-inter uppercase tracking-widest text-zinc-500 font-bold">Current Score</span>
+            <div id="scoreDisplay" class="text-emerald-500 font-outfit text-4xl font-extrabold drop-shadow-xl">0</div>
+        </div>
+        <div class="flex flex-col items-end">
+            <span class="text-xs font-inter uppercase tracking-widest text-zinc-500 font-bold">Best Record</span>
+            <div id="highScoreDisplay" class="text-cyan-400 font-outfit text-4xl font-extrabold drop-shadow-xl">0</div>
+        </div>
+    </div>
+
+    <main class="relative w-full max-w-xl aspect-square bg-charcoal-800 rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden border-2 border-charcoal-800/50 backdrop-blur-sm">
+        <canvas id="gameCanvas" width="560" height="560" class="w-full h-full block rounded-xl border border-charcoal-900/50"></canvas>
+
+        <div id="gameOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-charcoal-900/85 backdrop-blur-md rounded-2xl text-zinc-100 text-center font-outfit text-4xl sm:text-5xl font-extrabold transition-opacity duration-500 z-20 opacity-0 pointer-events-none">
+            <p id="gameMessage" class="drop-shadow-xl text-shadow-lg"></p>
+            <p id="subGameMessage" class="text-xl sm:text-2xl font-inter font-light mt-4 opacity-75 drop-shadow"></p>
+        </div>
+    </main>
+
+    <div class="w-full max-w-xl my-8 bg-charcoal-800/30 border border-dashed border-zinc-700 h-24 flex items-center justify-center rounded-xl">
+        <span class="text-zinc-600 text-xs uppercase tracking-widest italic">Advertisement Space</span>
+    </div>
+
+    <section class="w-full max-w-xl mt-4 bg-charcoal-800/50 p-6 rounded-2xl border border-zinc-800/50">
+        <h2 class="text-xl font-outfit font-bold text-cyan-400 mb-4 uppercase">How to Play</h2>
+        <div class="space-y-4 text-zinc-300 text-sm leading-relaxed">
+            <p><strong class="text-emerald-500">The Objective:</strong> Navigate your snake to eat the <span class="text-rose-500 font-bold">Red Food pellets</span>. Each pellet grows your snake and increases your score.</p>
+            <ul class="list-disc pl-5 space-y-2">
+                <li><strong>Arrows:</strong> Use Arrow Keys to move the snake.</li>
+                <li><strong>Spacebar:</strong> Press Space to start the game.</li>
+                <li><strong>'R' Key:</strong> Press 'R' to restart after a game over.</li>
+            </ul>
+            <p class="italic text-zinc-500 text-xs pt-2 underline">Note: The game speed increases as your score goes up!</p>
+        </div>
+    </section>
+
+    <footer class="w-full max-w-xl mt-12 mb-8 flex flex-col items-center border-t border-zinc-800 pt-6">
+        <div class="flex space-x-6 mb-4">
+            <button onclick="togglePrivacy()" class="text-zinc-500 hover:text-cyan-400 text-xs transition-colors">Privacy Policy</button>
+            <a href="mailto:snakearcades@gmail.com" class="text-zinc-500 hover:text-cyan-400 text-xs transition-colors">Contact Us</a>
+        </div>
+        <p class="text-zinc-600 text-[10px] uppercase tracking-tighter">© 2025 Snake Arcade. All Rights Reserved.</p>
+    </footer>
+
+    <div id="privacyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-charcoal-800 p-8 rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto border border-zinc-700">
+            <h2 class="text-2xl font-outfit font-bold text-cyan-400 mb-4">Privacy Policy</h2>
+            <div class="text-zinc-400 text-xs space-y-4 leading-relaxed">
+                <p>This website uses <strong>Google AdSense</strong> to display advertisements. Google uses cookies to serve ads based on a user's prior visits to your website or other websites.</p>
+                <p><strong>Local Storage:</strong> This game saves your "High Score" locally on your browser using localStorage. We do not collect or store this data on any external servers.</p>
+                <p><strong>Third-Party Vendors:</strong> Third-party vendors, including Google, use cookies to serve ads based on your web activity. You may opt out of personalized advertising by visiting Google's Ad Settings.</p>
+                <p><strong>Contact:</strong> For privacy concerns, contact us at snakearcades@gmail.com.</p>
+            </div>
+            <button onclick="togglePrivacy()" class="mt-6 w-full py-2 bg-emerald-500 text-black font-bold rounded-lg hover:bg-emerald-400 transition-colors">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME LOGIC ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        const gameOverlay = document.getElementById('gameOverlay');
+        const gameMessage = document.getElementById('gameMessage');
+        const subGameMessage = document.getElementById('subGameMessage');
+
+        const GRID_WIDTH = 28; 
+        const GRID_HEIGHT = 28;
+        const CELL_SIZE = 20; 
+        const SCREEN_WIDTH = GRID_WIDTH * CELL_SIZE; 
+        const SCREEN_HEIGHT = GRID_HEIGHT * CELL_SIZE; 
+
+        canvas.width = SCREEN_WIDTH;
+        canvas.height = SCREEN_HEIGHT;
+
+        const COLORS = { BLACK: '#1A1A1D', GREEN: '#10B981', BLUE: '#22D3EE', RED: '#F43F5E' };
+        const DIRECTIONS = { 
+            UP: { x: 0, y: -1 }, 
+            DOWN: { x: 0, y: 1 }, 
+            LEFT: { x: -1, y: 0 }, 
+            RIGHT: { x: 1, y: 0 } 
+        };
+
+        let snake = [];
+        let food = {};
+        let direction = DIRECTIONS.RIGHT;
+        let score = 0;
+        let highScore = localStorage.getItem('snakeHighScore') || 0;
+        let game_over = false;
+        let game_started = false;
+        let initial_speed = 7; 
+        let current_speed = initial_speed;
+        let gameInterval;
+
+        highScoreDisplay.textContent = highScore;
+
+        function resetGame() {
+            snake = [
+                { x: Math.floor(GRID_WIDTH / 2) - 1, y: Math.floor(GRID_HEIGHT / 2) },
+                { x: Math.floor(GRID_WIDTH / 2) - 2, y: Math.floor(GRID_HEIGHT / 2) },
+                { x: Math.floor(GRID_WIDTH / 2) - 3, y: Math.floor(GRID_HEIGHT / 2) }
+            ];
+            direction = DIRECTIONS.RIGHT;
+            score = 0;
+            game_over = false;
+            game_started = false;
+            current_speed = initial_speed;
+            generateFood();
+            updateScoreDisplay();
+            clearInterval(gameInterval);
+            draw();
+            showOverlay('Press SPACE to Start', 'Use Arrow Keys to Move');
+        }
+
+        function generateFood() {
+            let newFood;
+            while (true) {
+                newFood = { x: Math.floor(Math.random() * GRID_WIDTH), y: Math.floor(Math.random() * GRID_HEIGHT) };
+                if (!snake.some(s => s.x === newFood.x && s.y === newFood.y)) { food = newFood; break; }
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
+            if (game_over && (e.key === 'r' || e.key === 'R')) resetGame();
+            if (!game_started && (e.key === ' ' || e.key.includes('Arrow'))) {
+                game_started = true;
+                hideOverlay();
+                startGameLoop();
+            }
+            const currentDir = direction;
+            if (e.key === 'ArrowUp' && currentDir !== DIRECTIONS.DOWN) direction = DIRECTIONS.UP;
+            if (e.key === 'ArrowDown' && currentDir !== DIRECTIONS.UP) direction = DIRECTIONS.DOWN;
+            if (e.key === 'ArrowLeft' && currentDir !== DIRECTIONS.RIGHT) direction = DIRECTIONS.LEFT;
+            if (e.key === 'ArrowRight' && currentDir !== DIRECTIONS.LEFT) direction = DIRECTIONS.RIGHT;
+        });
+
+        function moveSnake() {
+            if (game_over || !game_started) return;
+            const head = snake[0];
+            const newHead = { x: head.x + direction.x, y: head.y + direction.y };
+
+            if (newHead.x < 0 || newHead.x >= GRID_WIDTH || newHead.y < 0 || newHead.y >= GRID_HEIGHT || 
+                snake.some((s, i) => i !== snake.length - 1 && s.x === newHead.x && s.y === newHead.y)) {
+                game_over = true;
+                clearInterval(gameInterval);
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('snakeHighScore', highScore);
+                    highScoreDisplay.textContent = highScore;
+                }
+                showOverlay(`Game Over!`, `Score: ${score}. Press 'R' to Restart`);
+                return;
+            }
+
+            snake.unshift(newHead);
+            if (newHead.x === food.x && newHead.y === food.y) {
+                score++;
+                updateScoreDisplay();
+                generateFood();
+                current_speed += 0.2;
+                startGameLoop();
+            } else { snake.pop(); }
+        }
+
+        function draw() {
+            ctx.fillStyle = COLORS.BLACK;
+            ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            
+            // Draw Food
+            ctx.fillStyle = COLORS.RED;
+            ctx.beginPath();
+            ctx.roundRect(food.x * CELL_SIZE + 2, food.y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4, 4);
+            ctx.fill();
+
+            // Draw Snake
+            snake.forEach((segment, i) => {
+                ctx.fillStyle = i === 0 ? COLORS.GREEN : COLORS.BLUE;
+                ctx.beginPath();
+                ctx.roundRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE, 3);
+                ctx.fill();
+            });
+        }
+
+        function updateScoreDisplay() { scoreDisplay.textContent = score; }
+        
+        function showOverlay(msg, sub) {
+            gameMessage.textContent = msg;
+            subGameMessage.textContent = sub;
+            gameOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            gameOverlay.classList.add('opacity-100', 'pointer-events-auto');
+        }
+        
+        function hideOverlay() {
+            gameOverlay.classList.add('opacity-0', 'pointer-events-none');
+            gameOverlay.classList.remove('opacity-100', 'pointer-events-auto');
+        }
+
+        function startGameLoop() {
+            clearInterval(gameInterval);
+            gameInterval = setInterval(() => { moveSnake(); draw(); }, 1000 / current_speed);
+        }
+
+        // --- UI LOGIC ---
+        function togglePrivacy() {
+            const modal = document.getElementById('privacyModal');
+            modal.classList.toggle('hidden');
+        }
+
+        resetGame();
+    </script>
+</body>
+</html>
