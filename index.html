@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro-Modern Snake Game | Play Online</title>
-
+    <title>Snake Arcade | Play Classic Arcade Online</title>
+    
+    <meta name="description" content="Play the ultimate Snake Arcade game. Features adaptive difficulty, high score tracking, and classic arcade mechanics. Free to play in your browser.">
+    <meta name="keywords" content="Snake Game, Retro Arcade, Online Games, Classic Snake, Browser Game">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+    
     <style type="text/tailwindcss">
         @layer base {
             body {
@@ -16,6 +20,31 @@
             }
         }
         .text-shadow-lg { text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1A1A1D; }
+        ::-webkit-scrollbar-thumb { background: #2C2C30; border-radius: 10px; }
+        
+        @keyframes celebrate {
+            0% { transform: scale(1); filter: hue-rotate(0deg); }
+            50% { transform: scale(1.1); filter: hue-rotate(45deg); }
+            100% { transform: scale(1); filter: hue-rotate(0deg); }
+        }
+        .celebration-pop { animation: celebrate 0.5s ease-in-out infinite; }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-active { animation: shake 0.3s; }
     </style>
     <script>
         tailwind.config = {
@@ -39,33 +68,32 @@
     </script>
 </head>
 <body class="flex flex-col items-center min-h-screen p-4 overflow-y-auto">
-
-    <div class="w-full max-w-xl mb-4 p-3 bg-charcoal-800/80 border border-amber-500/30 rounded-xl flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-xs sm:text-sm text-zinc-300">
-            This game is optimized for <strong>Desktop and Laptop</strong>. A physical keyboard is required to play.
-        </p>
-    </div>
-
+    
     <header class="w-full max-w-xl py-6 text-center">
-        <h1 class="text-3xl font-outfit font-extrabold text-emerald-500 tracking-tighter uppercase">Retro Snake</h1>
-        <p class="text-zinc-500 text-sm">Classic Arcade Action</p>
+        <h1 class="text-4xl font-outfit font-extrabold text-emerald-500 tracking-tighter uppercase">Snake Arcade</h1>
+        <p class="text-zinc-500 text-sm">Experience the Classic High-Speed Arcade Action</p>
     </header>
 
     <div class="w-full max-w-xl flex justify-between items-end mb-4 px-2">
-        <div class="flex flex-col">
+        <div class="flex flex-col text-left">
             <span class="text-xs font-inter uppercase tracking-widest text-zinc-500 font-bold">Current Score</span>
-            <div id="scoreDisplay" class="text-emerald-500 font-outfit text-4xl font-extrabold drop-shadow-xl">0</div>
+            <div class="flex items-center gap-2">
+                <div id="scoreDisplay" class="text-emerald-500 font-outfit text-4xl font-extrabold drop-shadow-xl">0</div>
+                <div id="newRecordBadge" class="hidden bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">NEW RECORD!</div>
+            </div>
         </div>
+        
+        <button onclick="togglePause()" class="mb-2 px-4 py-1 bg-charcoal-800 border border-zinc-700 rounded-md text-xs uppercase tracking-widest font-bold hover:bg-zinc-700 transition-colors">
+            Pause (P)
+        </button>
+
         <div class="flex flex-col items-end">
             <span class="text-xs font-inter uppercase tracking-widest text-zinc-500 font-bold">Best Record</span>
             <div id="highScoreDisplay" class="text-cyan-400 font-outfit text-4xl font-extrabold drop-shadow-xl">0</div>
         </div>
     </div>
 
-    <main class="relative w-full max-w-xl aspect-square bg-charcoal-800 rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden border-2 border-charcoal-800/50 backdrop-blur-sm">
+    <main id="gameContainer" class="relative w-full max-w-xl aspect-square bg-charcoal-800 rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden border-2 border-charcoal-800/50 backdrop-blur-sm">
         <canvas id="gameCanvas" width="560" height="560" class="w-full h-full block rounded-xl border border-charcoal-900/50"></canvas>
 
         <div id="gameOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-charcoal-900/85 backdrop-blur-md rounded-2xl text-zinc-100 text-center font-outfit text-4xl sm:text-5xl font-extrabold transition-opacity duration-500 z-20 opacity-0 pointer-events-none">
@@ -78,42 +106,117 @@
         <span class="text-zinc-600 text-xs uppercase tracking-widest italic">Advertisement Space</span>
     </div>
 
-    <section class="w-full max-w-xl mt-4 bg-charcoal-800/50 p-6 rounded-2xl border border-zinc-800/50">
-        <h2 class="text-xl font-outfit font-bold text-cyan-400 mb-4 uppercase">How to Play</h2>
-        <div class="space-y-4 text-zinc-300 text-sm leading-relaxed">
-            <p><strong class="text-emerald-500">The Objective:</strong> Navigate your snake to eat the <span class="text-rose-500 font-bold">Red Food pellets</span>. Each pellet grows your snake and increases your score.</p>
-            <ul class="list-disc pl-5 space-y-2">
-                <li><strong>Arrows:</strong> Use Arrow Keys to move the snake.</li>
-                <li><strong>Spacebar:</strong> Press Space to start the game.</li>
-                <li><strong>'R' Key:</strong> Press 'R' to restart after a game over.</li>
-            </ul>
-            <p class="italic text-zinc-500 text-xs pt-2 underline">Note: The game speed increases as your score goes up!</p>
+    <section class="w-full max-w-xl space-y-8 text-left">
+        <div class="bg-charcoal-800/50 p-6 rounded-2xl border border-zinc-800/50">
+            <h2 class="text-2xl font-outfit font-bold text-emerald-500 mb-6 uppercase tracking-tight">HOW TO PLAY SNAKE ARCADE</h2>
+            
+            <div class="space-y-6 text-zinc-300 text-sm leading-relaxed">
+                <div>
+                    <h3 class="text-cyan-400 font-bold text-lg mb-2">1. The Controls</h3>
+                    <p class="mb-3">You can control the snake's direction using your keyboard. The game responds instantly to your input to allow for high-speed maneuvers.</p>
+                    <ul class="grid grid-cols-2 gap-2 text-xs font-mono bg-black/30 p-4 rounded-lg border border-zinc-700">
+                        <li><span class="text-emerald-500 uppercase">UP:</span> Arrow Up</li>
+                        <li><span class="text-emerald-500 uppercase">DOWN:</span> Arrow Down</li>
+                        <li><span class="text-emerald-500 uppercase">LEFT:</span> Arrow Left</li>
+                        <li><span class="text-emerald-500 uppercase">RIGHT:</span> Arrow Right</li>
+                        <li><span class="text-cyan-400 uppercase">START:</span> Spacebar</li>
+                        <li><span class="text-cyan-400 uppercase">PAUSE:</span> 'P' Key</li>
+                        <li><span class="text-rose-500 uppercase">RESTART:</span> 'R' Key</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-cyan-400 font-bold text-lg mb-2">2. Gameplay Rules</h3>
+                    <p>The logic follows the classic arcade rules with a few modern twists:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-2">
+                        <li><strong>Feeding:</strong> Collect the <span class="text-rose-500">Red Pellets</span> to grow. Each pellet adds one segment to your snake's length.</li>
+                        <li><strong>Golden Apple:</strong> Rare <span class="text-yellow-400 font-bold">Golden Apples</span> spawn for a short time, offering 5 points and a massive score boost.</li>
+                        <li><strong>Magnet Power-up:</strong> Collect <span class="text-blue-500 font-bold">Blue Power Pellets</span> to pull food toward the snake's head for 5 seconds.</li>
+                        <li><strong>Obstacles:</strong> Static <span class="text-zinc-500 font-bold">Blocks</span> appear in the grid center as you score, making the perimeter strategy essential.</li>
+                        <li><strong>The Boundaries:</strong> Do not hit the edges of the game board. The charcoal border is solid; hitting it results in an immediate Game Over.</li>
+                        <li><strong>Self-Collision:</strong> As you get longer, you must avoid running into your own body. Crossing your own path will end the round.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-cyan-400 font-bold text-lg mb-2">3. Scoring & Difficulty</h3>
+                    <ul class="list-disc pl-5 mt-2 space-y-2">
+                        <li><strong>Point System:</strong> Each pellet consumed awards 1 point.</li>
+                        <li><strong>Speed Scaling:</strong> For every pellet eaten, the game engine slightly increases the "tick rate." This means the snake moves faster the better you play.</li>
+                        <li><strong>High Scores:</strong> Your best performance is saved to your browser's local storage automatically.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-charcoal-800/50 p-6 rounded-2xl border border-zinc-800/50">
+            <h2 class="text-xl font-outfit font-bold text-rose-500 mb-4 uppercase">ADVANCED STRATEGY GUIDE</h2>
+            <p class="text-zinc-400 text-sm mb-4">To reach the 100+ point club, try the <strong>Perimeter Strategy</strong>. By moving primarily around the edges of the 28×28 grid, you keep the center open for quick maneuvering when food spawns in tight spots. Avoid "zig-zagging" which traps your head between segments.</p>
         </div>
     </section>
 
     <footer class="w-full max-w-xl mt-12 mb-8 flex flex-col items-center border-t border-zinc-800 pt-6">
-        <div class="flex space-x-6 mb-4">
+        <div class="flex space-x-6 mb-6 font-bold uppercase">
             <button onclick="togglePrivacy()" class="text-zinc-500 hover:text-cyan-400 text-xs transition-colors">Privacy Policy</button>
+            <button onclick="toggleAbout()" class="text-zinc-500 hover:text-cyan-400 text-xs transition-colors">About Us</button>
             <a href="mailto:snakearcades@gmail.com" class="text-zinc-500 hover:text-cyan-400 text-xs transition-colors">Contact Us</a>
         </div>
-        <p class="text-zinc-600 text-[10px] uppercase tracking-tighter">© 2025 Snake Arcade. All Rights Reserved.</p>
+        <p class="text-zinc-600 text-[10px] uppercase tracking-tighter">© 2026 Snake Arcade. All Rights Reserved.</p>
     </footer>
 
     <div id="privacyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-charcoal-800 p-8 rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto border border-zinc-700">
-            <h2 class="text-2xl font-outfit font-bold text-cyan-400 mb-4">Privacy Policy</h2>
-            <div class="text-zinc-400 text-xs space-y-4 leading-relaxed">
-                <p>This website uses <strong>Google AdSense</strong> to display advertisements. Google uses cookies to serve ads based on a user's prior visits to your website or other websites.</p>
-                <p><strong>Local Storage:</strong> This game saves your "High Score" locally on your browser using localStorage. We do not collect or store this data on any external servers.</p>
-                <p><strong>Third-Party Vendors:</strong> Third-party vendors, including Google, use cookies to serve ads based on your web activity. You may opt out of personalized advertising by visiting Google's Ad Settings.</p>
-                <p><strong>Contact:</strong> For privacy concerns, contact us at snakearcades@gmail.com.</p>
+        <div class="bg-charcoal-800 p-8 rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto border border-zinc-700 text-left">
+            <h2 class="text-3xl font-outfit font-extrabold text-cyan-400 mb-2">Privacy Policy</h2>
+            <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-6 font-bold">LAST UPDATED: JANUARY 2026</p>
+            <div class="text-zinc-400 text-xs space-y-6 leading-relaxed">
+                <div>
+                    <h3 class="text-emerald-500 font-bold text-sm mb-2 uppercase tracking-wide">OVERVIEW</h3>
+                    <p>Your privacy is important to us at Snake Arcades. The way we gather and utilize data while you play our game is described in this policy.</p>
+                </div>
+                <div>
+                    <h3 class="text-emerald-500 font-bold text-sm mb-2 uppercase tracking-wide">ADVERTISING AND COOKIES</h3>
+                    <div class="pl-4 border-l-2 border-zinc-700 space-y-4">
+                        <p><strong class="text-zinc-200">Google AdSense:</strong> We serve advertisements using Google AdSense based on your visits to this website and other websites on the Internet using cookies, such as the DART cookie.</p>
+                        <p><strong class="text-zinc-200">Personalization:</strong> By going to Google Ads Settings, you can choose not to receive personalized ads.</p>
+                        <p><strong class="text-zinc-200">Analytics:</strong> We may employ cookies to better understand website traffic and enhance the gaming experience.</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-emerald-500 font-bold text-sm mb-2 uppercase tracking-wide">DATA GATHERING</h3>
+                    <p>Unless voluntarily supplied, we do not gather personal identifiers like names or emails. We gather high scores to enhance game balance.</p>
+                </div>
             </div>
-            <button onclick="togglePrivacy()" class="mt-6 w-full py-2 bg-emerald-500 text-black font-bold rounded-lg hover:bg-emerald-400 transition-colors">Close</button>
+            <button onclick="togglePrivacy()" class="mt-8 w-full py-3 bg-emerald-500 text-black font-extrabold text-lg rounded-lg uppercase">Close</button>
+        </div>
+    </div>
+
+    <div id="aboutModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 text-left">
+        <div class="bg-charcoal-800 p-8 rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto border border-zinc-700 font-inter">
+            <h2 class="text-3xl font-outfit font-extrabold text-cyan-400 mb-6">About Us</h2>
+            <div class="text-zinc-400 text-xs space-y-6 leading-relaxed">
+                <div>
+                    <h3 class="text-emerald-500 font-bold text-sm mb-2 uppercase tracking-wide uppercase">WHO WE ARE</h3>
+                    <p>We are a committed team of innovative designers and front-end engineers with a focus on high-performance online experiences. Our team bridges the gap between vintage arcade nostalgia and contemporary web standards thanks to our extensive knowledge of HTML5 and CSS3. We believe that well-thought-out design and clean code are the only requirements for truly great gaming.</p>
+                </div>
+                <div>
+                    <h3 class="text-emerald-500 font-bold text-sm mb-2 uppercase tracking-wide font-inter uppercase">OUR PROFICIENCY: ENGINEERING THE CLASSIC</h3>
+                    <p class="mb-4">While many developers rely on heavy external frameworks, we take great pride in "Vanilla" excellence. Our development process for the Snake Arcade project is centered on three core pillars:</p>
+                    <ul class="space-y-4 pl-4 border-l-2 border-zinc-700">
+                        <li><strong class="text-zinc-200">Semantic Architecture:</strong> We utilize the HTML5 Canvas API to achieve high-frequency rendering and frame-perfect responsiveness, ensuring the game feels snappy and professional.</li>
+                        <li><strong class="text-zinc-200">CSS Precision:</strong> By leveraging hardware-accelerated transitions, responsive grid layouts, and sophisticated animations, we guarantee fluid gameplay and a beautiful UI on every device, from mobile to desktop.</li>
+                        <li><strong class="text-zinc-200">Performance Optimization:</strong> We prioritize modular, lightweight code. This ensures zero-lag performance and lightning-fast load times, even in environments with limited bandwidth.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-emerald-500 font-bold text-sm mb-2 uppercase tracking-wide uppercase">OUR GOALS</h3>
+                    <p>Our mission is to demonstrate that immersive, interactive entertainment can be produced using the fundamental building blocks of the web. By mastering HTML and CSS, we ensure our games are inherently accessible, SEO-friendly, and universally compatible with all modern browsers globally.</p>
+                </div>
+            </div>
+            <button onclick="toggleAbout()" class="mt-8 w-full py-3 bg-emerald-500 text-black font-extrabold text-lg rounded-lg hover:bg-emerald-400 transition-colors uppercase">Close</button>
         </div>
     </div>
 
     <script>
-        // --- GAME LOGIC ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreDisplay = document.getElementById('scoreDisplay');
@@ -121,150 +224,113 @@
         const gameOverlay = document.getElementById('gameOverlay');
         const gameMessage = document.getElementById('gameMessage');
         const subGameMessage = document.getElementById('subGameMessage');
+        const newRecordBadge = document.getElementById('newRecordBadge');
+        const gameContainer = document.getElementById('gameContainer');
 
         const GRID_WIDTH = 28; 
         const GRID_HEIGHT = 28;
         const CELL_SIZE = 20; 
-        const SCREEN_WIDTH = GRID_WIDTH * CELL_SIZE; 
-        const SCREEN_HEIGHT = GRID_HEIGHT * CELL_SIZE; 
 
-        canvas.width = SCREEN_WIDTH;
-        canvas.height = SCREEN_HEIGHT;
-
-        const COLORS = { BLACK: '#1A1A1D', GREEN: '#10B981', BLUE: '#22D3EE', RED: '#F43F5E' };
-        const DIRECTIONS = { 
-            UP: { x: 0, y: -1 }, 
-            DOWN: { x: 0, y: 1 }, 
-            LEFT: { x: -1, y: 0 }, 
-            RIGHT: { x: 1, y: 0 } 
+        const COLORS = { 
+            BLACK: '#1A1A1D', GREEN: '#10B981', BLUE: '#22D3EE', RED: '#F43F5E', 
+            GOLD: '#FACC15', MAGNET: '#3B82F6', WALL: '#5D4037' // CHOCOLATE BROWN
         };
+        const DIRECTIONS = { UP: { x: 0, y: -1 }, DOWN: { x: 0, y: 1 }, LEFT: { x: -1, y: 0 }, RIGHT: { x: 1, y: 0 } };
 
-        let snake = [];
-        let food = {};
-        let direction = DIRECTIONS.RIGHT;
-        let score = 0;
-        let highScore = localStorage.getItem('snakeHighScore') || 0;
-        let game_over = false;
-        let game_started = false;
-        let initial_speed = 7; 
-        let current_speed = initial_speed;
-        let gameInterval;
+        let snake = [], food = {}, obstacles = [], magnetPellet = null, magnetActiveTimer = 0, goldenFood = null, particles = [], inputQueue = [];
+        let direction = DIRECTIONS.RIGHT, score = 0, highScore = localStorage.getItem('snakeHighScore') || 0, game_over = false, game_started = false, is_paused = false;
+        let initial_speed = 3.5, current_speed = initial_speed, gameInterval, audioCtx;
+
+        function initAudio() { if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if (audioCtx.state === 'suspended') audioCtx.resume(); }
+        function playSound(type) { if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'eat') { osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1); } }
 
         highScoreDisplay.textContent = highScore;
 
         function resetGame() {
-            snake = [
-                { x: Math.floor(GRID_WIDTH / 2) - 1, y: Math.floor(GRID_HEIGHT / 2) },
-                { x: Math.floor(GRID_WIDTH / 2) - 2, y: Math.floor(GRID_HEIGHT / 2) },
-                { x: Math.floor(GRID_WIDTH / 2) - 3, y: Math.floor(GRID_HEIGHT / 2) }
-            ];
-            direction = DIRECTIONS.RIGHT;
-            score = 0;
-            game_over = false;
-            game_started = false;
-            current_speed = initial_speed;
-            generateFood();
-            updateScoreDisplay();
-            clearInterval(gameInterval);
-            draw();
-            showOverlay('Press SPACE to Start', 'Use Arrow Keys to Move');
+            snake = [{ x: 14, y: 14 }, { x: 13, y: 14 }, { x: 12, y: 14 }];
+            direction = DIRECTIONS.RIGHT; score = 0; game_over = false; game_started = false; is_paused = false;
+            current_speed = initial_speed; obstacles = []; goldenFood = null; magnetPellet = null; magnetActiveTimer = 0;
+            inputQueue = []; newRecordBadge.classList.add('hidden');
+            generateFood(); updateScoreDisplay(); clearInterval(gameInterval); 
+            gameOverlay.classList.remove('celebration-pop'); draw(); showOverlay('Press SPACE to Start', 'Use Arrow Keys to Move');
         }
 
         function generateFood() {
-            let newFood;
             while (true) {
-                newFood = { x: Math.floor(Math.random() * GRID_WIDTH), y: Math.floor(Math.random() * GRID_HEIGHT) };
-                if (!snake.some(s => s.x === newFood.x && s.y === newFood.y)) { food = newFood; break; }
+                let newFood = { x: Math.floor(Math.random() * GRID_WIDTH), y: Math.floor(Math.random() * GRID_HEIGHT) };
+                if (!snake.some(s => s.x === newFood.x && s.y === newFood.y) && !obstacles.some(o => o.x === newFood.x && o.y === newFood.y)) { food = newFood; break; }
             }
         }
+
+        function triggerShake() { gameContainer.classList.add('shake-active'); setTimeout(() => gameContainer.classList.remove('shake-active'), 300); }
 
         document.addEventListener('keydown', (e) => {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
+            if (e.key === 'p' || e.key === 'P') togglePause();
             if (game_over && (e.key === 'r' || e.key === 'R')) resetGame();
-            if (!game_started && (e.key === ' ' || e.key.includes('Arrow'))) {
-                game_started = true;
-                hideOverlay();
-                startGameLoop();
+            if (!game_started && (e.key === ' ' || e.key.includes('Arrow'))) { game_started = true; initAudio(); hideOverlay(); startGameLoop(); }
+            
+            // Input Buffering
+            if (!is_paused && inputQueue.length < 2) {
+                if (e.key === 'ArrowUp') inputQueue.push(DIRECTIONS.UP);
+                else if (e.key === 'ArrowDown') inputQueue.push(DIRECTIONS.DOWN);
+                else if (e.key === 'ArrowLeft') inputQueue.push(DIRECTIONS.LEFT);
+                else if (e.key === 'ArrowRight') inputQueue.push(DIRECTIONS.RIGHT);
             }
-            const currentDir = direction;
-            if (e.key === 'ArrowUp' && currentDir !== DIRECTIONS.DOWN) direction = DIRECTIONS.UP;
-            if (e.key === 'ArrowDown' && currentDir !== DIRECTIONS.UP) direction = DIRECTIONS.DOWN;
-            if (e.key === 'ArrowLeft' && currentDir !== DIRECTIONS.RIGHT) direction = DIRECTIONS.LEFT;
-            if (e.key === 'ArrowRight' && currentDir !== DIRECTIONS.LEFT) direction = DIRECTIONS.RIGHT;
         });
 
+        function processInput() { if (inputQueue.length === 0) return; const nextDir = inputQueue.shift(); if (nextDir.x !== -direction.x || nextDir.y !== -direction.y) direction = nextDir; }
+
         function moveSnake() {
-            if (game_over || !game_started) return;
-            const head = snake[0];
-            const newHead = { x: head.x + direction.x, y: head.y + direction.y };
-
+            if (game_over || !game_started || is_paused) return;
+            processInput();
+            const head = snake[0], newHead = { x: head.x + direction.x, y: head.y + direction.y };
             if (newHead.x < 0 || newHead.x >= GRID_WIDTH || newHead.y < 0 || newHead.y >= GRID_HEIGHT || 
-                snake.some((s, i) => i !== snake.length - 1 && s.x === newHead.x && s.y === newHead.y)) {
-                game_over = true;
-                clearInterval(gameInterval);
-                if (score > highScore) {
-                    highScore = score;
-                    localStorage.setItem('snakeHighScore', highScore);
-                    highScoreDisplay.textContent = highScore;
-                }
-                showOverlay(`Game Over!`, `Score: ${score}. Press 'R' to Restart`);
-                return;
+                snake.some((s, i) => i !== snake.length - 1 && s.x === newHead.x && s.y === newHead.y) || obstacles.some(o => o.x === newHead.x && o.y === newHead.y)) {
+                triggerShake(); game_over = true; clearInterval(gameInterval);
+                if (score > highScore) { highScore = score; localStorage.setItem('snakeHighScore', highScore); highScoreDisplay.textContent = highScore; }
+                showOverlay(`Game Over!`, `Score: ${score}. Press 'R' to Restart`); return;
             }
-
+            if (magnetActiveTimer > 0) { if (food.x < newHead.x) food.x++; else if (food.x > newHead.x) food.x--; if (food.y < newHead.y) food.y++; else if (food.y > newHead.y) food.y--; magnetActiveTimer--; }
             snake.unshift(newHead);
             if (newHead.x === food.x && newHead.y === food.y) {
-                score++;
-                updateScoreDisplay();
-                generateFood();
-                current_speed += 0.2;
-                startGameLoop();
-            } else { snake.pop(); }
+                score++; playSound('eat'); createExplosion(food.x, food.y, COLORS.RED); updateScoreDisplay(); generateFood();
+                if (score > highScore && highScore > 0) newRecordBadge.classList.remove('hidden');
+                if (score % 5 === 0) obstacles.push({ x: Math.floor(Math.random() * 20) + 4, y: Math.floor(Math.random() * 20) + 4 });
+                if (Math.random() < 0.1) magnetPellet = { x: Math.floor(Math.random() * GRID_WIDTH), y: Math.floor(Math.random() * GRID_HEIGHT) };
+                current_speed += 0.1; startGameLoop();
+            } else if (goldenFood && newHead.x === goldenFood.x && newHead.y === goldenFood.y) {
+                score += 5; if (score > highScore && highScore > 0) newRecordBadge.classList.remove('hidden'); goldenFood = null; updateScoreDisplay();
+            } else if (magnetPellet && newHead.x === magnetPellet.x && newHead.y === magnetPellet.y) { magnetActiveTimer = 50; magnetPellet = null; } else { snake.pop(); }
         }
 
         function draw() {
-            ctx.fillStyle = COLORS.BLACK;
-            ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            ctx.fillStyle = COLORS.BLACK; ctx.fillRect(0, 0, 560, 560);
+            obstacles.forEach(o => { ctx.fillStyle = COLORS.WALL; ctx.fillRect(o.x * 20, o.y * 20, 20, 20); });
+            if (magnetPellet) { ctx.fillStyle = COLORS.MAGNET; ctx.beginPath(); ctx.arc(magnetPellet.x * 20 + 10, magnetPellet.y * 20 + 10, 8, 0, Math.PI * 2); ctx.fill(); }
             
-            // Draw Food
-            ctx.fillStyle = COLORS.RED;
-            ctx.beginPath();
-            ctx.roundRect(food.x * CELL_SIZE + 2, food.y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4, 4);
-            ctx.fill();
-
-            // Draw Snake
-            snake.forEach((segment, i) => {
-                ctx.fillStyle = i === 0 ? COLORS.GREEN : COLORS.BLUE;
-                ctx.beginPath();
-                ctx.roundRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE, 3);
+            // DRAW SPHERICAL GOLDEN APPLE
+            if (goldenFood) {
+                ctx.fillStyle = COLORS.GOLD; ctx.beginPath();
+                ctx.arc(goldenFood.x * 20 + 10, goldenFood.y * 20 + 10, 10, 0, Math.PI * 2);
                 ctx.fill();
-            });
+            }
+            
+            ctx.fillStyle = COLORS.RED; ctx.beginPath(); ctx.roundRect(food.x * 20 + 2, food.y * 20 + 2, 16, 16, 4); ctx.fill();
+            snake.forEach((segment, i) => { ctx.fillStyle = i === 0 ? COLORS.GREEN : (magnetActiveTimer > 0 ? COLORS.MAGNET : COLORS.BLUE); ctx.beginPath(); ctx.roundRect(segment.x * 20, segment.y * 20, 20, 20, 3); ctx.fill(); });
+            particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life -= 0.04; ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 3, 3); if (p.life <= 0) particles.splice(i, 1); }); ctx.globalAlpha = 1.0;
         }
 
+        function createExplosion(x, y, color) { for (let i = 0; i < 10; i++) particles.push({ x: x * 20 + 10, y: y * 20 + 10, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 1.0, color }); }
+        function togglePause() { if (!game_started || game_over) return; is_paused = !is_paused; is_paused ? showOverlay("PAUSED", "Press 'P' to Resume") : hideOverlay(); }
         function updateScoreDisplay() { scoreDisplay.textContent = score; }
-        
-        function showOverlay(msg, sub) {
-            gameMessage.textContent = msg;
-            subGameMessage.textContent = sub;
-            gameOverlay.classList.remove('opacity-0', 'pointer-events-none');
-            gameOverlay.classList.add('opacity-100', 'pointer-events-auto');
-        }
-        
-        function hideOverlay() {
-            gameOverlay.classList.add('opacity-0', 'pointer-events-none');
-            gameOverlay.classList.remove('opacity-100', 'pointer-events-auto');
-        }
-
-        function startGameLoop() {
-            clearInterval(gameInterval);
-            gameInterval = setInterval(() => { moveSnake(); draw(); }, 1000 / current_speed);
-        }
-
-        // --- UI LOGIC ---
-        function togglePrivacy() {
-            const modal = document.getElementById('privacyModal');
-            modal.classList.toggle('hidden');
-        }
-
+        function showOverlay(msg, sub) { gameMessage.textContent = msg; subGameMessage.textContent = sub; gameOverlay.classList.remove('opacity-0', 'pointer-events-none'); gameOverlay.classList.add('opacity-100', 'pointer-events-auto'); }
+        function hideOverlay() { gameOverlay.classList.add('opacity-0', 'pointer-events-none'); gameOverlay.classList.remove('opacity-100', 'pointer-events-auto'); }
+        function startGameLoop() { clearInterval(gameInterval); gameInterval = setInterval(() => { moveSnake(); draw(); }, 1000 / current_speed); }
+        function togglePrivacy() { document.getElementById('privacyModal').classList.toggle('hidden'); }
+        function toggleAbout() { document.getElementById('aboutModal').classList.toggle('hidden'); }
+        const originalGenerate = generateFood;
+        generateFood = function() { originalGenerate(); if (Math.random() < 0.15) { goldenFood = { x: Math.floor(Math.random() * GRID_WIDTH), y: Math.floor(Math.random() * GRID_HEIGHT) }; setTimeout(() => { goldenFood = null; }, 6000); } };
         resetGame();
     </script>
 </body>
